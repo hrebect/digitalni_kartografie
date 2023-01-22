@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<base target="_top">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>Pražská pivní ZOO</title>
+	
+	<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+
+	<style>
+        body {
+			height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        html, body, #map {
+            height: 100%;
+            width: 100%;
+        }.info { padding: 6px 8px; 
+			font: 14px/16px Arial, Helvetica, sans-serif;
+			background: white;
+			background: rgba(255,255,255,0.8);
+			box-shadow: 0 0 15px rgba(0,0,0,0.2);
+			border-radius: 5px; } .info h4 { margin: 0 0 5px; color: #777; }
+    </style>
+	
+</head>
+<body>
+
+	
+<div id="map"></div>
+
+<script src="path.js" type="text/javascript"></script>
+
+<script>
+
+	// functions
+	function style(feature){
+		return{
+			weight: 5,
+			opacity: 0.7,
+			color: 'blue',
+			dashArray: "15 10"
+		};
+	}
+
+	function resetHighlight(e) {
+		path.resetStyle(e.target);
+		info.update();
+	}
+
+	function zoomToFeature(e) {
+		map.fitBounds(e.target.getBounds());
+	}
+
+	// function to highlitght one object and other reset to default
+	var prevLayerClicked = null;
+
+	function keepHighlight(e) {
+
+		if (prevLayerClicked !== null) {
+        // Reset style
+        resetHighlight(prevLayerClicked);
+        };
+      
+	    zoomToFeature(e);
+
+        const layer =e.target;
+
+		layer.setStyle({
+			weight: 8,
+			color: 'red',
+			dashArray: '',
+			opacity: 1
+		});
+
+		layer.bringToFront();
+
+		info.update(layer.feature.properties);
+
+
+        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+        	layer.bringToFront();
+        };
+        prevLayerClicked = layer;
+    }
+	
+
+	function onEachFeature(feature, layer) {
+		layer.on({
+			click: keepHighlight
+		});
+	}
+
+	// custom icon
+	const pubIcon = L.Icon.extend({
+		options: {
+			iconSize:     [38, 38],
+			iconAnchor:   [19, 37],
+			popupAnchor:  [0, -50]
+		}
+	});
+
+	const iPub = new pubIcon({iconUrl: 'images/pub_icon.png'});
+
+
+	// define markers on pubs locations
+	const mCerny_vul = L.marker([50.0881483, 14.3918472], {icon: iPub})
+		.bindPopup("<h2>Hospoda U Černého vola</h2>"
+		+" <p> Loretánské náměstí 107/1 </br> 11800 Praha 1 - Hradčany, Česko</p>"
+		+" <img src= 'images/cerny_vul.jpeg'  height='120' width='190' />" 
+		+ "<h3> Otvírací doba: </h3>"
+		+"<p style='text-align: center;' pondělí 10 - 22 </br> úterý: 10 - 22 </br> středa: 10 -22 </br> čtvrtek: 10 -22 </br> pátek: 10 -22 </br> sobota: 10 -22 </br> neděle: 10 -22 </p> ", {
+			maxWidth : 220,
+			maxHeight : 220
+		})
+		;
+	const mU_hrocha = L.marker([50.0891884, 14.4031946], {icon: iPub})
+		.bindPopup("<h2>Hospoda U Hrocha</h2>"
+		+ "<p>Thunovská 178/10 </br> 11800 Praha 1 - Malá Strana, Česko </p>"
+		+" <img src= 'images/u_hrocha.jpeg'  height='120' width='190' />" 
+		+ "<h3> Otvírací doba: </h3>"
+		+"<p style='text-align: center;' pondělí 12 - 23 </br> úterý: 12 - 23 </br> středa: 12 -23 </br> čtvrtek: 12 -23 </br> pátek: 12 -23 </br> sobota: 12 -23 </br> neděle: 12 -23 </p> ", {
+			maxWidth : 220,
+			maxHeight : 220
+		})
+		;
+		
+	const mU_zlateho_tygra = L.marker([50.0858358, 14.4180403], {icon: iPub})
+		.bindPopup("<h2>Hospoda U Zlatého tygra</h2>"
+		+ "<p>Husova 228/17 </br> 11000 Praha 1 - Staré Město, Česko </p>"
+		+" <img src= 'images/u_zlateho_tygra.jpeg'  height='120' width='190' />" 
+		+ "<h3> Otvírací doba: </h3>"
+		+"<p style='text-align: center;' pondělí 15 - 23 </br> úterý: 15 - 23 </br> středa: 15 -23 </br> čtvrtek: 15 -23 </br> pátek: 15 -23 </br> sobota: 15 -23 </br> neděle: 15 -23 </p> ", {
+			maxWidth : 220,
+			maxHeight : 220
+		})
+		;
+		
+	const mU_zlateho_slona = L.marker([50.0847881, 14.4212126], {icon: iPub})
+		.bindPopup("<h2>Hospoda U Zlatého slona</h2>"
+		+ "<p>Havelská 508/9 </br> 11000 Praha 1 - Staré Město, Česko </p>"
+		+" <img src= 'images/u_zlateho_slona.jpg'  height='120' width='190' />" 
+		+ "<h3> Otvírací doba: </h3>"
+		+"<p style='text-align: center;' pondělí 10 - 23 </br> úterý: 10 - 23 </br> středa: 10 -23 </br> čtvrtek: 10 -23 </br> pátek: 10 -23 </br> sobota: 10 -23 </br> neděle: 10 -23 </p> ", {
+			maxWidth : 220,
+			maxHeight : 220
+		})
+		;
+		
+	const mCerveny_jelen = L.marker([50.0874514, 14.4308240], {icon: iPub})
+		.bindPopup("<h2>Restaurace Červený jelen</h2>"
+		+ "<p>Hybernská 1034/5 </br> 11000 Praha 1 - Nové Město, Česko </p>"
+		+" <img src= 'images/cerveny_jelen.jpeg'  height='120' width='190' />" 
+		+ "<h3> Otvírací doba: </h3>"
+		+"<p style='text-align: center;' pondělí 11:30 - 23 </br> úterý: 11:30 - 23 </br> středa: 11:30 -23 </br> čtvrtek: 11:30 -23 </br> pátek: 11:30 -23 </br> sobota: 12 -23 </br> neděle: 12 -23 </p> ", {
+			maxWidth : 220,
+			maxHeight : 220
+		})
+		;	
+	const mU_kocoura = L.marker([50.0886887, 14.4019979], {icon: iPub})
+		.bindPopup("<h2>Hospoda U Kocoura</h2>"
+		+ "<p>Nerudova 205/2 </br> 11800 Praha 1 - Malá Strana, Česko </p>"
+		+" <img src= 'images/u_kocoura.jpeg'  height='120' width='190' />" 
+		+ "<h3> Otvírací doba: </h3>"
+		+"<p style='text-align: center;' pondělí 12 - 23 </br> úterý: 12 - 23 </br> středa: 12 -23 </br> čtvrtek: 12 -23 </br> pátek: 12 -23 </br> sobota: 12 -23 </br> neděle: 12 -23 </p> ", {
+			maxWidth : 220,
+			maxHeight : 220
+		})
+		;
+	
+	// add path from json	
+	const path = L.geoJSON(geojsonFeature, {
+		style,
+		onEachFeature
+	});
+
+	// define layer group with pubs
+	const pubs = L.layerGroup([mCerny_vul, mU_hrocha,mU_kocoura, mU_zlateho_tygra, mU_zlateho_slona, mCerveny_jelen]);
+	const paths = L.layerGroup([path]);
+	
+	// Define map layers
+	// osm
+	const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    });
+    
+	// satellite
+	const satellite = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',{
+		id: 'mapbox/satellite-v9',
+		tileSize: 512,
+		zoomOffset: -1,
+		attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery � <a href="https://www.mapbox.com/">Mapbox</a>'
+	});
+
+	// set defoult map
+	const map = L.map('map', {
+		center: [50.083329, 14.418011],
+		zoom: 15,
+		layers: [osm, pubs, paths]
+	});
+	
+	// add layers to baseLayers
+	const baseLayers = {
+		'OpenStreetMap': osm,
+		'Satallite': satellite
+	};
+
+	const overlays = {
+		'Hospody': pubs,
+		'Trasa' : paths
+	};
+	
+	// create layer control button
+	const layerControl = L.control.layers(baseLayers, overlays,{
+		position: 'bottomleft'
+	}).addTo(map);
+
+	// info table
+	const info = L.control();
+
+	info.onAdd = function(map) {
+		this._div = L.DomUtil.create('div', 'info');
+		this.update();
+		return this._div;
+	};
+
+	info.update = function (props) {
+		const len = props ? `${Math.round(props.length * 100) /100} km `: 'Vyberte úsek';
+		const time = props ? `${Math.round(props.length/5*60)} minut `: '';
+		this._div.innerHTML = `<h4>Délka úseku</h4>${len}
+		<h5>Odhadovaný čas cesty</h5>${time}`;
+	};
+
+	info.addTo(map);
+
+	// add scale
+	L.control.scale({
+		imperial: false,
+		position: 'bottomright'
+	}).addTo(map);
+
+</script>
+    
+    
+</body>
+</html>
